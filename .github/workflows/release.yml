@@ -72,7 +72,8 @@ jobs:
       - name: Package linux/amd64
         if: steps.tag.outputs.skip != 'true'
         run: |
-          VERSION="${steps.tag.outputs.name#v}"
+          TAG="${{ steps.tag.outputs.name }}"
+          VERSION="${TAG#v}"
           PKGDIR="cpuguard_${VERSION}_linux_amd64"
           mkdir -p "${PKGDIR}"
           cp bin/amd64/cpuguardd bin/amd64/cpuguardctl bin/amd64/cpuguard-burn "${PKGDIR}/"
@@ -93,7 +94,8 @@ jobs:
       - name: Package linux/arm64
         if: steps.tag.outputs.skip != 'true'
         run: |
-          VERSION="${steps.tag.outputs.name#v}"
+          TAG="${{ steps.tag.outputs.name }}"
+          VERSION="${TAG#v}"
           PKGDIR="cpuguard_${VERSION}_linux_arm64"
           mkdir -p "${PKGDIR}"
           cp bin/arm64/cpuguardd bin/arm64/cpuguardctl bin/arm64/cpuguard-burn "${PKGDIR}/"
