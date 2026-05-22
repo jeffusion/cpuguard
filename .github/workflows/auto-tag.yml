@@ -1,0 +1,43 @@
+name: Auto Tag
+
+on:
+  push:
+    branches: [ main ]
+
+permissions:
+  contents: write
+
+jobs:
+  auto-tag:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Bump version and push tag
+        run: |
+          LATEST_TAG=$(git tag --sort=-v:refname | head -1 || echo "v0.0.0")
+          LATEST="${LATEST_TAG#v}"
+
+          COMMIT_MSG=$(git log -1 --format=%s)
+
+          if echo "$COMMIT_MSG" | grep -qi "breaking change"; then
+            MAJOR=$(( ${LATEST%%.*} + 1 ))
+            NEW="v${MAJOR}.0.0"
+          elif echo "$COMMIT_MSG" | grep -qE "^feat(\(.*\))?:"; then
+            IFS='.' read -r MAJOR MINOR PATCH <<< "$LATEST"
+            NEW="v${MAJOR}.$(( MINOR + 1 )).0"
+          else
+            IFS='.' read -r MAJOR MINOR PATCH <<< "$LATEST"
+            NEW="v${MAJOR}.${MINOR}.$(( PATCH + 1 ))"
+          fi
+
+          if git rev-parse "${NEW}" >/dev/null 2>&1; then
+            echo "Tag ${NEW} already exists, skipping"
+            exit 0
+          fi
+
+          git tag "${NEW}"
+          git push origin "${NEW}"
+          echo "Created tag ${NEW}"
