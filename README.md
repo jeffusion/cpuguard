@@ -49,17 +49,25 @@ make check
 ## Install
 
 ```bash
-cd cpuguard
-sudo bash scripts/install.sh
+curl -sfL https://raw.githubusercontent.com/jeffusion/cpuguard/main/scripts/install.sh | sudo sh
 ```
 
-The install script will:
+To install a specific version:
 
-- Build `cpuguardd` and `cpuguardctl`
-- Install binaries to `/usr/local/bin`
-- Copy example config to `/etc/cpuguard/config.yaml`
-- Install systemd unit to `/etc/systemd/system/cpuguard.service`
-- Reload systemd daemon
+```bash
+curl -sfL https://raw.githubusercontent.com/jeffusion/cpuguard/main/scripts/install.sh | sudo sh -s -- v0.1.0
+```
+
+<details>
+<summary>Build from source (for developers)</summary>
+
+```bash
+git clone https://github.com/jeffusion/cpuguard.git
+cd cpuguard
+make install
+```
+
+</details>
 
 After installation:
 

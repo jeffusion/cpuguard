@@ -49,17 +49,25 @@ make check
 ## 安装
 
 ```bash
-cd cpuguard
-sudo bash scripts/install.sh
+curl -sfL https://raw.githubusercontent.com/jeffusion/cpuguard/main/scripts/install.sh | sudo sh
 ```
 
-安装脚本会执行这些操作：
+安装指定版本：
 
-- 编译 `cpuguardd` 和 `cpuguardctl`
-- 安装到 `/usr/local/bin`
-- 将示例配置复制到 `/etc/cpuguard/config.yaml`
-- 安装 systemd 服务到 `/etc/systemd/system/cpuguard.service`
-- 重新加载系统服务定义
+```bash
+curl -sfL https://raw.githubusercontent.com/jeffusion/cpuguard/main/scripts/install.sh | sudo sh -s -- v0.1.0
+```
+
+<details>
+<summary>从源码构建（开发者）</summary>
+
+```bash
+git clone https://github.com/jeffusion/cpuguard.git
+cd cpuguard
+make install
+```
+
+</details>
 
 安装后执行：
 
