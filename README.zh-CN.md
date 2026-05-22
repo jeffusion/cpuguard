@@ -100,8 +100,13 @@ cpuguardctl tui
 卸载：
 
 ```bash
-cd cpuguard
-sudo bash scripts/uninstall.sh
+curl -sfL https://raw.githubusercontent.com/jeffusion/cpuguard/main/scripts/uninstall.sh | sudo sh
+```
+
+同时删除配置和状态数据：
+
+```bash
+curl -sfL https://raw.githubusercontent.com/jeffusion/cpuguard/main/scripts/uninstall.sh | sudo REMOVE_CONFIG=1 REMOVE_STATE=1 sh
 ```
 
 ## 运行
