@@ -38,7 +38,6 @@ detect_latest_version() {
 	local tmp
 	tmp=$(curl -sfL -o /dev/null -w '%{url_effective}' "${url}" 2>/dev/null) \
 		|| err "Failed to query latest release from ${url}"
-	# https://github.com/<org>/<repo>/releases/latest redirects to /tag/<version>
 	local version="${tmp##*/}"
 	[ -n "${version}" ] || err "Could not determine latest version from ${tmp}"
 	echo "${version}"
@@ -59,12 +58,6 @@ DOWNLOAD_URL="https://github.com/${REPO}/releases/download/${VERSION}/${TARBALL}
 
 info "Installing cpuguard ${VERSION} for linux/${ARCH}..."
 
-if [ ! -d /sys/fs/cgroup/cgroup.controllers ]; then
-	err "cgroup v2 is required but not available on this system."
-fi
-
-# ── Download ─────────────────────────────────────────────────────────
-
 TMPDIR="$(mktemp -d)"
 trap 'rm -rf "${TMPDIR}"' EXIT
 
@@ -72,10 +65,7 @@ info "Downloading ${DOWNLOAD_URL}..."
 curl -sfL -o "${TMPDIR}/${TARBALL}" "${DOWNLOAD_URL}" \
 	|| err "Download failed. Check that version ${VERSION} exists at ${DOWNLOAD_URL}"
 
-# ── Extract & Install ────────────────────────────────────────────────
-
 tar -xzf "${TMPDIR}/${TARBALL}" -C "${TMPDIR}"
-# tarball contains a directory: cpuguard_<version>_linux_<arch>/
 SRC="${TMPDIR}/cpuguard_${VERSION_NO_V}_linux_${ARCH}"
 
 [ -f "${SRC}/cpuguardd" ]   || err "cpuguardd not found in archive"
@@ -86,18 +76,14 @@ install -d "${PREFIX}" "${ETC_DIR}" "${STATE_DIR}" "${SYSTEMD_DIR}"
 install -m 0755 "${SRC}/cpuguardd"   "${PREFIX}/cpuguardd"
 install -m 0755 "${SRC}/cpuguardctl" "${PREFIX}/cpuguardctl"
 
-# Config: preserve existing
 if [ ! -f "${ETC_DIR}/config.yaml" ]; then
 	install -m 0644 "${SRC}/config.yaml" "${ETC_DIR}/config.yaml"
 else
 	info "Preserving existing config: ${ETC_DIR}/config.yaml"
 fi
 
-# Systemd unit
 install -m 0644 "${SRC}/cpuguard.service" "${SYSTEMD_DIR}/${SERVICE_NAME}"
 systemctl daemon-reload
-
-# ── Done ─────────────────────────────────────────────────────────────
 
 cat <<EOF
 
