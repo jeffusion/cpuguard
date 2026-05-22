@@ -1,0 +1,15 @@
+[Unit]
+Description=cpuguard CPU self-throttling daemon
+After=network.target docker.service
+Wants=docker.service
+
+[Service]
+Type=simple
+ExecStart=/usr/local/bin/cpuguardd -config /etc/cpuguard/config.yaml
+Restart=on-failure
+RestartSec=5
+User=root
+Group=root
+
+[Install]
+WantedBy=multi-user.target

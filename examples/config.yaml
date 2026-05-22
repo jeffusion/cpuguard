@@ -1,0 +1,54 @@
+global:
+  sample_interval: 5s
+  state_db: /var/lib/cpuguard/state.db
+  socket_path: /run/cpuguardd.sock
+  log_level: info
+  event_retention:
+    max_events: 10000
+    max_age: 720h
+
+rules:
+  - id: host-all-user-processes
+    scope: host_process
+    selector:
+      match_all: true
+    threshold:
+      # Percent of total machine CPU capacity.
+      cpu_percent_total_gt: 90
+      window: 5m
+      ratio: 0.9
+    action:
+      type: throttle_cpu
+      factor: 0.5
+      # Minimum limit as percent of total machine CPU capacity.
+      min_limit_pct: 20
+    recovery:
+      # Release only after the subject stays below this total CPU percentage.
+      cpu_percent_total_lt: 70
+      window: 10m
+      ratio: 0.9
+    cooldown: 15m
+
+  - id: docker-all-containers
+    scope: docker_container
+    selector:
+      match_all: true
+    exclude:
+      label:
+        cpuguard.ignore: "true"
+    threshold:
+      # Percent of total machine CPU capacity.
+      cpu_percent_total_gt: 90
+      window: 5m
+      ratio: 0.9
+    action:
+      type: throttle_cpu
+      factor: 0.5
+      # Minimum limit as percent of total machine CPU capacity.
+      min_limit_pct: 20
+    recovery:
+      # Release only after the subject stays below this total CPU percentage.
+      cpu_percent_total_lt: 70
+      window: 10m
+      ratio: 0.9
+    cooldown: 15m

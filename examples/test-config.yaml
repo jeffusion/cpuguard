@@ -1,0 +1,27 @@
+global:
+  sample_interval: 1s
+  state_db: /var/lib/cpuguard/state.db
+  socket_path: /run/cpuguardd.sock
+  log_level: info
+  event_retention:
+    max_events: 10000
+    max_age: 720h
+
+rules:
+  - id: host-cpuguard-burn
+    scope: host_process
+    selector:
+      process_name: cpuguard-burn
+    threshold:
+      cpu_percent_total_gt: 80
+      window: 20s
+      ratio: 0.8
+    action:
+      type: throttle_cpu
+      factor: 0.5
+      min_limit_pct: 20
+    recovery:
+      cpu_percent_total_lt: 30
+      window: 30s
+      ratio: 0.8
+    cooldown: 45s

@@ -1,0 +1,42 @@
+# Build artifacts
+/bin/
+/build/
+/dist/
+/tmp/
+/cpuguard
+/cpuguardd
+/cpuguardctl
+/cpuguard-burn
+/.cpuguardd
+
+# Go test and coverage output
+*.test
+*.out
+coverage.*
+
+# Runtime state
+*.db
+*.db-*
+*.sqlite
+*.sqlite3
+*.sock
+*.pid
+*.log
+
+# AI assistant files
+AGENTS.md
+
+# Dependency directories
+vendor/
+
+# Local environment and editor files
+.env
+.env.*
+!.env.example
+.DS_Store
+*.swp
+*.swo
+*.bak
+*.orig
+.idea/
+.vscode/
