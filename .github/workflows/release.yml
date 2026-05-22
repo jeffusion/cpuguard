@@ -1,0 +1,51 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        include:
+          - goos: linux
+            goarch: amd64
+          - goos: linux
+            goarch: arm64
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.26'
+
+      - name: Build
+        env:
+          GOOS: ${{ matrix.goos }}
+          GOARCH: ${{ matrix.goarch }}
+        run: |
+          CGO_ENABLED=0 go build -buildvcs=false -ldflags="-s -w" -o bin/cpuguardd ./cmd/cpuguardd
+          CGO_ENABLED=0 go build -buildvcs=false -ldflags="-s -w" -o bin/cpuguardctl ./cmd/cpuguardctl
+          CGO_ENABLED=0 go build -buildvcs=false -ldflags="-s -w" -o bin/cpuguard-burn ./cmd/cpuguard-burn
+
+      - name: Package
+        run: |
+          VERSION="${GITHUB_REF_NAME#v}"
+          PKGDIR="cpuguard_${VERSION}_linux_${{ matrix.goarch }}"
+          mkdir -p "${PKGDIR}"
+          cp bin/cpuguardd bin/cpuguardctl bin/cpuguard-burn "${PKGDIR}/"
+          cp examples/config.yaml "${PKGDIR}/config.yaml"
+          cp packaging/systemd/cpuguard.service "${PKGDIR}/cpuguard.service"
+          tar -czf "${PKGDIR}.tar.gz" "${PKGDIR}"
+
+      - name: Upload release artifact
+        uses: softprops/action-gh-release@v2
+        with:
+          files: cpuguard_*.tar.gz
