@@ -81,19 +81,15 @@ install-systemd:
 
 # ── Uninstall targets ────────────────────────────────────────────────
 
-uninstall: stop-service uninstall-binaries
-	rm -f $(DESTDIR)$(SYSTEMD_DIR)/$(SERVICE_NAME)
-	systemctl daemon-reload 2>/dev/null || true
-	@echo "Uninstalled binaries and systemd unit."
-	@echo "Config ($(ETC_DIR)) and state ($(STATE_DIR)) are preserved."
-	@echo "To remove them: rm -rf $(ETC_DIR) $(STATE_DIR)"
-
-stop-service:
-	systemctl stop $(SERVICE_NAME) 2>/dev/null || true
-	systemctl disable $(SERVICE_NAME) 2>/dev/null || true
+uninstall:
+	sudo sh scripts/uninstall.sh
 
 uninstall-binaries:
 	rm -f $(DESTDIR)$(PREFIX)/cpuguardd $(DESTDIR)$(PREFIX)/cpuguardctl
+	rm -f $(DESTDIR)$(SYSTEMD_DIR)/$(SERVICE_NAME)
+	systemctl daemon-reload 2>/dev/null || true
+	@echo "Removed binaries and systemd unit."
+	@echo "Config ($(ETC_DIR)) and state ($(STATE_DIR)) are preserved."
 
 clean:
 	rm -rf $(BINDIR)

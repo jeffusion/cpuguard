@@ -100,8 +100,13 @@ cpuguardctl tui
 Uninstall:
 
 ```bash
-cd cpuguard
-sudo bash scripts/uninstall.sh
+curl -sfL https://raw.githubusercontent.com/jeffusion/cpuguard/main/scripts/uninstall.sh | sudo sh
+```
+
+To remove config and state as well:
+
+```bash
+curl -sfL https://raw.githubusercontent.com/jeffusion/cpuguard/main/scripts/uninstall.sh | sudo REMOVE_CONFIG=1 REMOVE_STATE=1 sh
 ```
 
 ## Run
