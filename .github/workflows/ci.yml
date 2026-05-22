@@ -11,6 +11,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
       - name: Set up Go
         uses: actions/setup-go@v5
         with:
@@ -24,6 +26,11 @@ jobs:
           fi
       - name: go vet
         run: go vet ./...
+      - name: Commitlint
+        if: github.event_name == 'pull_request'
+        run: |
+          npm install -g @commitlint/cli @commitlint/config-conventional
+          commitlint --from origin/main --to HEAD
 
   test:
     runs-on: ubuntu-latest
