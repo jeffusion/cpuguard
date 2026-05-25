@@ -27,12 +27,27 @@ func main() {
 	flag.StringVar(&configPath, "config", "/etc/cpuguard/config.yaml", "path to config file")
 	flag.StringVar(&serviceName, "service", "cpuguard.service", "systemd service name")
 	flag.BoolVar(&jsonOutput, "json", false, "output JSON for supported commands")
+	flag.Usage = usage
 	flag.CommandLine.Parse(stripJSONFlag(os.Args[1:], &jsonOutput))
-	if flag.NArg() < 1 {
-		usage()
-		os.Exit(1)
-	}
 	client := api.NewClient(socketPath)
+	if flag.NArg() < 1 {
+		if terminalSession() && !jsonOutput {
+			if err := tui.Run(socketPath); err != nil {
+				fatal(err.Error())
+			}
+			return
+		}
+		if err := printStatus(client, serviceName, jsonOutput); err != nil {
+			if code, ok := err.(exitError); ok {
+				os.Exit(int(code))
+			}
+			fatal(err.Error())
+		}
+		if !jsonOutput {
+			fmt.Fprintln(os.Stderr, "tip: run cpuguardctl tui from a terminal for interactive monitoring")
+		}
+		return
+	}
 	var (
 		body []byte
 		err  error
@@ -110,6 +125,15 @@ func runSystemctl(args ...string) error {
 	cmd.Stderr = os.Stderr
 	cmd.Stdin = os.Stdin
 	return cmd.Run()
+}
+
+func terminalSession() bool {
+	return isTerminal(os.Stdin) && isTerminal(os.Stdout)
+}
+
+func isTerminal(file *os.File) bool {
+	info, err := file.Stat()
+	return err == nil && info.Mode()&os.ModeCharDevice != 0
 }
 
 func stripJSONFlag(args []string, jsonOutput *bool) []string {
@@ -439,4 +463,8 @@ func fatal(msg string) {
 
 func usage() {
 	fmt.Fprintln(os.Stderr, "usage: cpuguardctl [-socket path] [-config path] [-service name] [-json] [start|stop|restart|enable|disable|check-config [path]|status|doctor|limits|logs|protected|rules|tui|reload|throttle <subject-id>|hold <subject-id>|unthrottle <subject-id>]")
+	fmt.Fprintln(os.Stderr, "       cpuguardctl without a command opens the interactive TUI when run from a terminal; otherwise it prints status.")
+	fmt.Fprintln(os.Stderr)
+	fmt.Fprintln(os.Stderr, "options:")
+	flag.PrintDefaults()
 }
